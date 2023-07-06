@@ -1246,6 +1246,7 @@ class CudaWrapperCodeGen(CppWrapperCodeGen):
         self.header.splice(
             """
             #include <ATen/native/BinaryOps.h>
+            #include <ATen/core/dispatch/Dispatcher.h>
             #include <c10/util/Exception.h>
             #include <c10/cuda/CUDAGuard.h>
 
