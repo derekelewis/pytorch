@@ -402,6 +402,18 @@ class UserDefinedObjectVariable(UserDefinedVariable):
             elif getattr_fn is not None:
                 unimplemented("UserDefined with non-function __getattr__")
 
+            #{{{
+
+            if name in value.__dict__:
+                thing = value.__dict__[name]
+                print(f"kkkkkk {name=} {thing=}")
+                if source:
+                    return VariableBuilder(tx, source)(thing).add_options(options)
+                elif ConstantVariable.is_literal(thing):
+                    return ConstantVariable(thing, **options)
+
+            #}}}
+
         if isinstance(subobj, property):
             return variables.UserMethodVariable(
                 subobj.fget, self, source=source, **options
