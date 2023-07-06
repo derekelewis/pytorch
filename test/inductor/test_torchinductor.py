@@ -6557,6 +6557,34 @@ class CommonTemplate:
             for right in [True, False]:
                 self.common(fn, (input, offsets, out_int32, right), check_lowp=False)
 
+    @config.patch(implicit_fallbacks=True)
+    def test_custom_op(self):
+        import torch.library
+        from torch.library import Library
+
+        foo = Library("foo", "DEF")
+        foo.define("custom(Tensor self) -> Tensor")
+
+        @torch.library.impl(foo, "custom", "CPU")
+        def foo_cpu(x):
+            return 3 * x
+
+        @torch.library.impl(foo, "custom", "CUDA")
+        def foo_cuda(x):
+            return 3 * x
+
+        @torch.library.impl(foo, "custom", "Meta")
+        def foo_meta(x):
+            return torch.empty_like(x)
+
+        def fn(x):
+            a = torch.nn.functional.relu(x)
+            b = torch.ops.foo.custom(a)
+            c = torch.cos(b)
+            return c
+
+        self.common(fn, (torch.randn((16, 32)),), check_lowp=False)
+
 
 @dataclasses.dataclass
 class TestFailure:
